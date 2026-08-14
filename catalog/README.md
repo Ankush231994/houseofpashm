@@ -2,6 +2,8 @@
 
 This directory is the controlled source for Milestone 0 catalogue preparation.
 
+The ten existing demo products and remote reference images are currently entered as `draft`, `operator_verified=no`, and `ownership_confirmed=no`. They may support development and visual review only. They must not be activated for commercial sale until the owner supplies and verifies real product data and brand-owned images.
+
 ## Files
 
 - `products.csv` contains one row per sellable variant. Repeat product-level fields for each size/colour variant and give every row the same product SKU plus a distinct variant suffix if required.

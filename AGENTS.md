@@ -191,6 +191,14 @@ Reasoning: user preference and low initial order volume.
 
 Rejected: premature courier API development and multiple gateway integrations.
 
+### 2026-08-14 — Temporary demo catalogue references
+
+Decision: populate the catalogue sheets with the existing ten demo products and remote reference images as unverified drafts while the owner obtains originals.
+
+Reasoning: this keeps implementation and visual work moving without misrepresenting third-party imagery or placeholder product data as production-ready.
+
+Rejected: activating demo products, claiming image ownership, downloading/rehosting third-party images, or delaying all catalogue structure work until originals arrive.
+
 ## Task board
 
 Update this board before ending every working session. Only one item should normally be In progress.
@@ -203,6 +211,7 @@ Update this board before ending every working session. Only one item should norm
 - Handover corrected for the actual React/TypeScript/Vinext implementation.
 - Production plan and shared agent protocol created.
 - Catalogue, product-image and source CSV templates created with owner-provided WhatsApp/Instagram sources recorded.
+- Ten existing demo products and their reference image URLs entered as unverified draft catalogue rows.
 
 ### In progress
 
@@ -250,12 +259,12 @@ Update this board before ending every working session. Only one item should norm
 Agent/session: Codex, 2026-08-14
 Milestone: Milestone 0 — verified launch catalogue and operating decisions
 Objective: Create the catalogue sheet and retrieve product images from the owner-provided WhatsApp catalogue and Instagram profile.
-Status: CSV templates and source audit complete; product rows/images blocked by authentication and missing original asset export.
+Status: CSV templates and source audit complete; ten demo products/reference URLs entered as temporary unverified drafts; production verification remains blocked by missing original asset export.
 Files changed: catalog/products.csv, catalog/product-images.csv, catalog/sources.csv, catalog/README.md, AGENTS.md
-Tests run and exact results: products.csv has 28 columns; product-images.csv has 10 columns; sources.csv parses with 2 valid absolute source URLs; git diff --check passed.
+Tests run and exact results: 10 unique draft product rows with 28 columns; 10 matched temporary image rows with 10 columns and valid absolute URLs; 3 valid source records; every product/image remains unverified; git diff --check passed.
 Failures/blockers: Public WhatsApp exposes only catalogue cover; public Instagram exposes profile metadata and reports 12 posts but no durable product media. Owner export/download is required.
 Uncommitted changes: See git status.
-Next exact action: Owner supplies original images and product names/prices for 12–20 launch products; agent populates and validates CSV rows.
+Next exact action: Owner supplies original images and verified names/prices/variants/stock for 12–20 launch products; agent replaces draft rows and validates the catalogue.
 Do not overwrite: Existing planning decisions or source audit rows without new authenticated evidence.
 ```
 
