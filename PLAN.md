@@ -1,11 +1,11 @@
 # HOUSEOFPASHM Production Plan
 
-Planning date: 14 August 2026  
-Target market: India  
-Initial demand target: 1–10 orders per day  
-Available effort: 5 hours per day  
-Operators: owner plus one person  
-Initial cash budget: ₹2,000  
+Planning date: 14 August 2026
+Target market: India
+Initial demand target: 1–10 orders per day
+Available effort: 5 hours per day
+Operators: owner plus one person
+Initial cash budget: ₹2,000
 Requested launch target: 14 September 2026
 
 ## 1. Reality check

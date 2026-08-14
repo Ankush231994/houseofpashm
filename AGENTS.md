@@ -1,6 +1,6 @@
 # HOUSEOFPASHM Agent Source of Truth
 
-**Current phase:** Phase 0 — production foundations  
+**Current phase:** Phase 0 — production foundations
 **Current milestone:** Milestone 0 — verified launch catalogue and operating decisions
 
 Last updated: 14 August 2026
