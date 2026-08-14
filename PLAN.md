@@ -53,6 +53,8 @@ Likely failure: Instagram posts omit stock, variants, weights, or current prices
 
 Goal: replace the hardcoded catalogue with a reliable local data layer.
 
+Status on 14 August 2026: catalogue foundation complete in source. Products, variants, images, import audits and inventory movements have a generated D1 migration; CSV validation/import, database storefront mode, safe demo fallback and fail-closed catalogue admin are implemented and tested. Owner-controlled D1/R2 resources, exact operator emails and verified product assets are still required. Cart, order, payment, webhook and broader order-admin tables remain in the later part of this milestone and must not be represented as complete.
+
 Concrete deliverable: Drizzle migrations for products, variants, inventory movements, carts, orders, order items, payment attempts, webhook events and admin audit entries; local D1/R2 bindings; CSV import validation; protected admin screens for product, stock and order status.
 
 Acceptance criteria: a clean database can be created from migrations; the same CSV imports twice without duplicates; invalid prices/SKUs fail with clear messages; only the two approved operator emails can reach admin; inventory edits create audit entries.

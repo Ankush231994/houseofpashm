@@ -1,7 +1,7 @@
 # HOUSEOFPASHM Agent Source of Truth
 
 **Current phase:** Phase 0 — production foundations
-**Current milestone:** Milestone 0 — verified launch catalogue and operating decisions
+**Current milestone:** Milestone 1A complete — catalogue data layer, import and protected admin foundation
 
 Last updated: 14 August 2026
 
@@ -45,6 +45,7 @@ Versions come from `package.json` and `package-lock.json`; update this section i
 | Migration tooling | Drizzle Kit | `0.31.10` |
 | Cloudflare adapter | `@cloudflare/vite-plugin` | `1.37.1` |
 | Cloudflare CLI/runtime | Wrangler | `4.92.0` |
+| Cloudflare Worker types | `@cloudflare/workers-types` | `4.20260702.1` |
 | Lint | ESLint | `9.39.4` |
 
 Planned production services: Cloudflare Workers, D1, R2 and Access; Razorpay; Resend; a manual courier workflow. These are architecture decisions, not proof that accounts or production bindings are already configured.
@@ -52,11 +53,12 @@ Planned production services: Cloudflare Workers, D1, R2 and Access; Razorpay; Re
 ## Repository map
 
 ```text
-app/                         Storefront routes, React UI, metadata and global styles.
+app/                         Storefront routes, protected admin/import API, React UI, metadata and global styles.
 build/                       Existing hosting/build integration; preserve unless hosting changes are approved.
 catalog/                     Controlled product, image and source CSVs for Milestone 0 intake.
 db/                          D1 access and the application Drizzle schema.
 drizzle/                     Committed database migrations and migration journal.
+lib/catalog/                 Demo fallback, CSV parsing/validation/import and database catalogue queries.
 examples/                    Starter examples; not production routes.
 public/                      Static assets such as the favicon.
 scripts/                     Verified Linux-oriented install/build/environment/artifact scripts.
@@ -101,11 +103,12 @@ Run from the repository root.
 | Windows development fallback | `$env:WRANGLER_LOG_PATH='.wrangler/wrangler.log'; npx.cmd vite` | Supported diagnostic fallback |
 | Production build | `npm run build` | Verified Linux/Bash path; requires GNU `timeout` |
 | Windows build fallback | `npx.cmd vinext build` | Builds successfully but does not replace artifact-script validation |
-| Full test | `npm test` | Runs build plus rendered HTML test; Linux/Bash requirement inherited |
-| Rendered test after build | `node --test tests/rendered-html.test.mjs` | Supported |
+| Full test | `npm test` | Runs build plus rendered HTML and catalogue tests; Linux/Bash requirement inherited |
+| Catalogue tests | `npm run test:catalog` | Supported on Windows and Linux |
+| Rendered test after build | `node --test tests/rendered-html.test.mjs` | Supported after build |
 | Lint | `npm run lint` | Linux/Bash wrapper |
 | Windows lint fallback | `npx.cmd eslint . --ignore-pattern dist --ignore-pattern .next` | Currently passes with image warnings |
-| Typecheck | `npx.cmd tsc --noEmit` | Currently blocked by missing Cloudflare Worker ambient types; fix before relying on it |
+| Typecheck | `npx.cmd tsc --noEmit` | Supported and passing |
 | Validate built artifact | `npm run validate:artifact` | Linux/Bash wrapper |
 | Generate migrations | `npm run db:generate` | Use only after an intentional schema change |
 | Source push | `git push origin main` | Pushes GitHub source; this is not proof of production deployment |
@@ -128,8 +131,11 @@ Never put real values in this file, source files, committed `.env*`, screenshots
 | `SUPPORT_EMAIL` | Public support and notification address | Local env / production variable |
 | `SUPPORT_WHATSAPP_NUMBER` | Public WhatsApp support target | Local env / production variable |
 | `ADMIN_EMAILS` | Exact comma-separated allowlist for two operators when checked by the app | Local env / production variable; must match Access policy |
-| `D1` binding name | Product/order database | `.openai/hosting.json`/Cloudflare binding; currently null and not production-ready |
-| `R2` binding name | Brand-owned product media | `.openai/hosting.json`/Cloudflare binding; currently null and not production-ready |
+| `ADMIN_AUTH_MODE` | `cloudflare-access` in production; `local` is non-production only | Local env / production variable |
+| `CATALOG_SOURCE` | `demo` by default; set `database` only after D1 is migrated/populated | Local env / production variable |
+| `R2_PUBLIC_BASE_URL` | Public base URL for verified product objects referenced by storage key | Local env / production variable |
+| `DB` D1 binding | Product/order database | `.openai/hosting.json`/Cloudflare binding; currently null and not production-ready |
+| R2 binding | Brand-owned product media | `.openai/hosting.json`/Cloudflare binding; currently null and not production-ready |
 | `CLOUDFLARE_ACCOUNT_ID` | Deployment account identifier | CI secret/config, never application client code |
 | `CLOUDFLARE_API_TOKEN` | Scoped deployment credential | CI secret only |
 
@@ -199,6 +205,14 @@ Reasoning: this keeps implementation and visual work moving without misrepresent
 
 Rejected: activating demo products, claiming image ownership, downloading/rehosting third-party images, or delaying all catalogue structure work until originals arrive.
 
+### 2026-08-14 — Fail-closed catalogue activation and admin access
+
+Decision: keep `CATALOG_SOURCE=demo` until D1 is migrated and populated, require explicit operator verification plus owned images before a CSV row can become active, and deny admin access unless an exact `ADMIN_EMAILS` allowlist and approved authentication mode are configured.
+
+Reasoning: the current ten products and images are placeholders, and the production bindings/operator emails are not available. Demo fallback preserves the approved preview without silently publishing unverified commercial data.
+
+Rejected: activating imported drafts automatically, trusting a client-only admin gate, or treating a filename as proof that an R2 object and image rights exist.
+
 ## Task board
 
 Update this board before ending every working session. Only one item should normally be In progress.
@@ -212,22 +226,24 @@ Update this board before ending every working session. Only one item should norm
 - Production plan and shared agent protocol created.
 - Catalogue, product-image and source CSV templates created with owner-provided WhatsApp/Instagram sources recorded.
 - Ten existing demo products and their reference image URLs entered as unverified draft catalogue rows.
+- Milestone 1A catalogue foundation: five-table D1/Drizzle schema and migration, validated idempotent CSV importer, inventory movement/import audit records, database-backed storefront mode with safe demo fallback, and fail-closed operator admin.
+- Catalogue/admin tests (7/7), native TypeScript, production build and rendered-output checks passing on 14 August 2026.
 
 ### In progress
 
-- Milestone 0: define the launch catalogue spreadsheet and operator workflow. (Codex, 2026-08-14)
+- None. Claim one task here before making the next application change.
 
 ### Next
 
-- Complete 12–20 verified product rows in the catalogue template.
 - Owner exports or downloads original images for the first 12–20 products and completes their core product fields.
 - Confirm exact operator emails and responsibilities.
+- Create/migrate the owner-controlled D1 database and R2 bucket, upload verified originals, run a dry import, then switch `CATALOG_SOURCE` to `database` only after acceptance.
 - Purchase a domain within the ₹2,000 setup cap.
 - Start Razorpay unregistered-individual KYC and record requirements/status.
 - Confirm courier capability, pricing, tracking, COD and returns.
 - Obtain qualified GST/invoicing advice for PAN-India sales.
 - Approve real seller/contact details and policy inputs.
-- Design D1 schema and production environment separation after foundations are green.
+- Continue Milestone 1 with cart/order/payment/admin-audit tables and order-status administration after catalogue production data is available.
 
 ### Blocked
 
@@ -240,14 +256,14 @@ Update this board before ending every working session. Only one item should norm
 
 ## Known issues and gotchas
 
-- The application currently contains exactly ten hardcoded demo products in `app/page.tsx`; none are production catalogue records.
+- The application defaults to ten demo products in `lib/catalog/demo.ts`; none are production catalogue records. Database mode is explicit via `CATALOG_SOURCE=database`.
 - External image URLs are references, not confirmed HOUSEOFPASHM-owned assets.
 - Cart and wishlist are browser-memory demonstrations and disappear on refresh.
-- There are no product-detail routes, variant controls, real checkout, orders, inventory or admin yet.
+- There are no product-detail routes, selectable variants, persistent cart, real checkout or order management yet. The current admin is limited to validated catalogue import.
 - Newsletter submission is not persisted or sent.
 - Current `.openai/hosting.json` has null D1/R2 bindings and must not be mistaken for production resources.
 - Linux-oriented scripts require Bash and GNU `timeout`; native Windows PowerShell cannot run them unchanged.
-- Direct `tsc --noEmit` currently fails because Cloudflare Worker ambient types (`cloudflare:workers`, `Fetcher`, `D1Database`) are missing from the TypeScript setup.
+- Direct `tsc --noEmit` passes with the Wrangler-compatible Cloudflare Worker type release.
 - ESLint currently reports five `next/image` optimization warnings and no errors.
 - Instagram access may be rate-limited and posts do not encode trustworthy SKU/variant/stock state.
 - The supplied public WhatsApp catalogue and Instagram profile expose cover/profile metadata but not authenticated product rows or durable product-image URLs; original owner exports are required.
@@ -257,15 +273,15 @@ Update this board before ending every working session. Only one item should norm
 
 ```text
 Agent/session: Codex, 2026-08-14
-Milestone: Milestone 0 — verified launch catalogue and operating decisions
-Objective: Create the catalogue sheet and retrieve product images from the owner-provided WhatsApp catalogue and Instagram profile.
-Status: CSV templates and source audit complete; ten demo products/reference URLs entered as temporary unverified drafts; production verification remains blocked by missing original asset export.
-Files changed: catalog/products.csv, catalog/product-images.csv, catalog/sources.csv, catalog/README.md, AGENTS.md
-Tests run and exact results: 10 unique draft product rows with 28 columns; 10 matched temporary image rows with 10 columns and valid absolute URLs; 3 valid source records; every product/image remains unverified; git diff --check passed.
-Failures/blockers: Public WhatsApp exposes only catalogue cover; public Instagram exposes profile metadata and reports 12 posts but no durable product media. Owner export/download is required.
-Uncommitted changes: See git status.
-Next exact action: Owner supplies original images and verified names/prices/variants/stock for 12–20 launch products; agent replaces draft rows and validates the catalogue.
-Do not overwrite: Existing planning decisions or source audit rows without new authenticated evidence.
+Milestone: Milestone 1A — catalogue data layer, import and protected admin foundation
+Objective: Implement the complete catalogue backend foundation while preserving the approved storefront and safe demo fallback.
+Status: Complete in source; external production configuration remains intentionally unconfigured.
+Files changed: app storefront/admin/API/styles; db schema/access; drizzle migration; lib admin/catalogue modules; catalogue tests; package/TypeScript configuration; AGENTS.md.
+Tests run and exact results: `npm.cmd ci --ignore-scripts` passed; `npx.cmd tsc --noEmit` passed; catalogue/admin tests 7/7 passed; Vinext production build passed; full post-build suite 8/8 passed; ESLint passed with five existing `<img>` optimization warnings and no errors.
+Failures/blockers: Production D1/R2 bindings, verified owned media and exact operator emails are unavailable. Admin therefore fails closed and the storefront remains in demo mode.
+Uncommitted changes: None at handoff; all Milestone 1A source and documentation changes are committed together.
+Next exact action: Obtain operator emails and owned catalogue assets, provision D1/R2, apply `drizzle/0000_absent_bloodstrike.sql`, dry-run/import approved CSVs, then enable database mode.
+Do not overwrite: Existing catalogue source audit, payment decisions, hosting configuration or demo visual behavior.
 ```
 
 ## Agent working protocol
