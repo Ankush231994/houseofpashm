@@ -54,6 +54,7 @@ Planned production services: Cloudflare Workers, D1, R2 and Access; Razorpay; Re
 ```text
 app/                         Storefront routes, React UI, metadata and global styles.
 build/                       Existing hosting/build integration; preserve unless hosting changes are approved.
+catalog/                     Controlled product, image and source CSVs for Milestone 0 intake.
 db/                          D1 access and the application Drizzle schema.
 drizzle/                     Committed database migrations and migration journal.
 examples/                    Starter examples; not production routes.
@@ -201,14 +202,16 @@ Update this board before ending every working session. Only one item should norm
 - Repository initialized and pushed to `https://github.com/Ankush231994/houseofpashm.git`.
 - Handover corrected for the actual React/TypeScript/Vinext implementation.
 - Production plan and shared agent protocol created.
+- Catalogue, product-image and source CSV templates created with owner-provided WhatsApp/Instagram sources recorded.
 
 ### In progress
 
-- Milestone 0: define the launch catalogue spreadsheet and operator workflow.
+- Milestone 0: define the launch catalogue spreadsheet and operator workflow. (Codex, 2026-08-14)
 
 ### Next
 
-- Create the catalogue template and complete 12–20 verified product rows.
+- Complete 12–20 verified product rows in the catalogue template.
+- Owner exports or downloads original images for the first 12–20 products and completes their core product fields.
 - Confirm exact operator emails and responsibilities.
 - Purchase a domain within the ₹2,000 setup cap.
 - Start Razorpay unregistered-individual KYC and record requirements/status.
@@ -238,7 +241,23 @@ Update this board before ending every working session. Only one item should norm
 - Direct `tsc --noEmit` currently fails because Cloudflare Worker ambient types (`cloudflare:workers`, `Fetcher`, `D1Database`) are missing from the TypeScript setup.
 - ESLint currently reports five `next/image` optimization warnings and no errors.
 - Instagram access may be rate-limited and posts do not encode trustworthy SKU/variant/stock state.
+- The supplied public WhatsApp catalogue and Instagram profile expose cover/profile metadata but not authenticated product rows or durable product-image URLs; original owner exports are required.
 - The source Git repository is at `origin/main`; pushing it is not yet a production deployment.
+
+## Active handover
+
+```text
+Agent/session: Codex, 2026-08-14
+Milestone: Milestone 0 — verified launch catalogue and operating decisions
+Objective: Create the catalogue sheet and retrieve product images from the owner-provided WhatsApp catalogue and Instagram profile.
+Status: CSV templates and source audit complete; product rows/images blocked by authentication and missing original asset export.
+Files changed: catalog/products.csv, catalog/product-images.csv, catalog/sources.csv, catalog/README.md, AGENTS.md
+Tests run and exact results: products.csv has 28 columns; product-images.csv has 10 columns; sources.csv parses with 2 valid absolute source URLs; git diff --check passed.
+Failures/blockers: Public WhatsApp exposes only catalogue cover; public Instagram exposes profile metadata and reports 12 posts but no durable product media. Owner export/download is required.
+Uncommitted changes: See git status.
+Next exact action: Owner supplies original images and product names/prices for 12–20 launch products; agent populates and validates CSV rows.
+Do not overwrite: Existing planning decisions or source audit rows without new authenticated evidence.
+```
 
 ## Agent working protocol
 
