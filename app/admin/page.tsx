@@ -6,7 +6,7 @@ import CatalogImporter from "./catalog-importer";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const access = getAdminAccess(await headers());
+  const access = await getAdminAccess(await headers());
   if (!access.allowed) {
     return (
       <main className="admin-shell">
@@ -35,6 +35,7 @@ export default async function AdminPage() {
         <Link href="/">VIEW STOREFRONT</Link>
       </header>
       <CatalogImporter databaseEnabled={process.env.CATALOG_SOURCE === "database"} />
+      <div className="admin-panel admin-next"><h2>Order operations</h2><p>Review paid orders, packing, shipping, delivery and refund states.</p><Link href="/admin/orders">OPEN ORDER DASHBOARD</Link></div>
     </main>
   );
 }

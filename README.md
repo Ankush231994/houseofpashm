@@ -1,9 +1,10 @@
 # HOUSEOFPASHM storefront
 
-The HOUSEOFPASHM interactive storefront demo runs on
+The HOUSEOFPASHM India-focused commerce storefront runs on
 [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support. See `HOUSEOFPASHM_DEMO_HANDOVER.md` for the product handover and
-`PRODUCTION_PLANNING_PROMPT.md` for the corrected production-planning workflow.
+Drizzle support. Start with [the owner action guide](docs/OWNER_ACTIONS.md) for
+the exact production inputs and setup order. See `PLAN.md` for launch gates and
+`docs/OPERATIONS_RUNBOOK.md` for fulfilment, backup, restore and rollback.
 
 ## Prerequisites
 
@@ -27,7 +28,7 @@ Scripts that need writable project-scoped home, npm, XDG, and temporary paths us
 - `.openai/hosting.json` declares optional Sites D1 and R2 bindings
 - `vite.config.ts` simulates declared bindings for local development
 - `db/index.ts` reads the D1 binding from the Cloudflare Worker environment
-- `db/schema.ts` starts intentionally empty
+- `db/schema.ts` contains catalogue, variant, inventory, order, payment and audit records
 - `examples/d1/` contains an optional D1 example surface
 - `drizzle.config.ts` supports local migration generation when needed
 
@@ -95,7 +96,9 @@ actions tied to the current ChatGPT user. Leave public content anonymous.
 - `npm run dev`: start the Vite/Vinext development server
 - `npm run build`: build and validate the deployable Sites artifact
 - `npm run start`: start the built Vinext application
-- `npm test`: build, validate, and verify the rendered development-preview metadata
+- `npm test`: build, validate, and run rendered, catalogue and commerce tests
+- `npm run test:commerce`: run server pricing, payment, state and migration tests
+- `npm run test:e2e`: run desktop/mobile shopping and accessibility tests
 - `npm run validate:artifact`: recheck an existing artifact's manifest and ESM `default.fetch` export
 - `npm run db:generate`: generate Drizzle migrations after schema changes
 

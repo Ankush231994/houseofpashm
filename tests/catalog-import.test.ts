@@ -67,11 +67,11 @@ test("invalid prices and non-HTTPS source URLs are rejected", async () => {
   assert.ok(plan.issues.some((entry) => entry.field === "image_filename"));
 });
 
-test("admin access fails closed without an operator allowlist", () => {
+test("admin access fails closed without an operator allowlist", async () => {
   const previousEmails = process.env.ADMIN_EMAILS;
   delete process.env.ADMIN_EMAILS;
   try {
-    const access = getAdminAccess(new Headers());
+    const access = await getAdminAccess(new Headers());
     assert.equal(access.allowed, false);
     assert.equal(access.configured, false);
   } finally {
@@ -80,18 +80,20 @@ test("admin access fails closed without an operator allowlist", () => {
   }
 });
 
-test("local admin mode accepts only an allowed email outside production", () => {
+test("local admin mode accepts only an allowed email outside production", async () => {
   const previousEmails = process.env.ADMIN_EMAILS;
   const previousMode = process.env.ADMIN_AUTH_MODE;
   const previousNodeEnv = process.env.NODE_ENV;
+  const previousAppEnv = process.env.APP_ENV;
   process.env.ADMIN_EMAILS = "owner@example.com,operator@example.com";
   process.env.ADMIN_AUTH_MODE = "local";
   Reflect.set(process.env, "NODE_ENV", "test");
+  process.env.APP_ENV = "local";
   try {
-    const allowed = getAdminAccess(new Headers({
+    const allowed = await getAdminAccess(new Headers({
       "x-houseofpashm-admin-email": "operator@example.com",
     }));
-    const denied = getAdminAccess(new Headers({
+    const denied = await getAdminAccess(new Headers({
       "x-houseofpashm-admin-email": "stranger@example.com",
     }));
     assert.equal(allowed.allowed, true);
@@ -103,5 +105,20 @@ test("local admin mode accepts only an allowed email outside production", () => 
     else process.env.ADMIN_AUTH_MODE = previousMode;
     if (previousNodeEnv === undefined) Reflect.deleteProperty(process.env, "NODE_ENV");
     else Reflect.set(process.env, "NODE_ENV", previousNodeEnv);
+    if (previousAppEnv === undefined) delete process.env.APP_ENV;
+    else process.env.APP_ENV = previousAppEnv;
   }
 });
+
+test("Cloudflare admin mode rejects spoofed identity headers without a valid JWT", async () => {
+  const previous = { emails: process.env.ADMIN_EMAILS, mode: process.env.ADMIN_AUTH_MODE, team: process.env.CLOUDFLARE_ACCESS_TEAM_DOMAIN, audience: process.env.CLOUDFLARE_ACCESS_AUD };
+  process.env.ADMIN_EMAILS = "owner@example.com"; process.env.ADMIN_AUTH_MODE = "cloudflare-access"; process.env.CLOUDFLARE_ACCESS_TEAM_DOMAIN = "https://example.cloudflareaccess.com"; process.env.CLOUDFLARE_ACCESS_AUD = "expected-audience";
+  try {
+    const access = await getAdminAccess(new Headers({ "cf-access-authenticated-user-email": "owner@example.com", "cf-access-jwt-assertion": "not-a-valid-jwt" }));
+    assert.equal(access.allowed, false);
+  } finally {
+    restoreEnv("ADMIN_EMAILS", previous.emails); restoreEnv("ADMIN_AUTH_MODE", previous.mode); restoreEnv("CLOUDFLARE_ACCESS_TEAM_DOMAIN", previous.team); restoreEnv("CLOUDFLARE_ACCESS_AUD", previous.audience);
+  }
+});
+
+function restoreEnv(name: string, value: string | undefined) { if (value === undefined) delete process.env[name]; else process.env[name] = value; }

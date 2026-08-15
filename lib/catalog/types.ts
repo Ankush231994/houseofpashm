@@ -1,3 +1,12 @@
+export type StorefrontVariant = {
+  sku: string;
+  colour?: string;
+  size?: string;
+  price: number;
+  mrp: number;
+  available: boolean;
+};
+
 export type StorefrontProduct = {
   id: string;
   sku: string;
@@ -14,6 +23,7 @@ export type StorefrontProduct = {
   colour?: string;
   size?: string;
   available: boolean;
+  variants?: StorefrontVariant[];
 };
 
 export type StorefrontCategory = {

@@ -6,3 +6,8 @@ export async function getStorefrontCatalog(): Promise<StorefrontCatalog> {
   const { getDatabaseCatalog } = await import("./service-database");
   return getDatabaseCatalog();
 }
+
+export async function getProductBySlug(slug: string) {
+  const catalog = await getStorefrontCatalog();
+  return catalog.products.find((product) => product.slug === slug) ?? null;
+}

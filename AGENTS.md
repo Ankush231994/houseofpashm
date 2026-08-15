@@ -1,9 +1,9 @@
 # HOUSEOFPASHM Agent Source of Truth
 
-**Current phase:** Phase 0 — production foundations
-**Current milestone:** Milestone 1A complete — catalogue data layer, import and protected admin foundation
+**Current phase:** Phase 1 — commerce source complete; owner-controlled launch gate pending
+**Current milestone:** Milestone 6 — production infrastructure and owner acceptance
 
-Last updated: 14 August 2026
+Last updated: 15 August 2026
 
 ## Project brief
 
@@ -47,6 +47,9 @@ Versions come from `package.json` and `package-lock.json`; update this section i
 | Cloudflare CLI/runtime | Wrangler | `4.92.0` |
 | Cloudflare Worker types | `@cloudflare/workers-types` | `4.20260702.1` |
 | Lint | ESLint | `9.39.4` |
+| Admin JWT verification | jose | `6.2.8` |
+| Browser testing | Playwright | `1.62.1` |
+| Accessibility testing | axe-core Playwright | `4.13.0` |
 
 Planned production services: Cloudflare Workers, D1, R2 and Access; Razorpay; Resend; a manual courier workflow. These are architecture decisions, not proof that accounts or production bindings are already configured.
 
@@ -105,6 +108,8 @@ Run from the repository root.
 | Windows build fallback | `npx.cmd vinext build` | Builds successfully but does not replace artifact-script validation |
 | Full test | `npm test` | Runs build plus rendered HTML and catalogue tests; Linux/Bash requirement inherited |
 | Catalogue tests | `npm run test:catalog` | Supported on Windows and Linux |
+| Commerce tests | `npm run test:commerce` | Supported on Windows and Linux |
+| Browser/accessibility tests | `npm run test:e2e` | Requires an installed Playwright Chromium browser |
 | Rendered test after build | `node --test tests/rendered-html.test.mjs` | Supported after build |
 | Lint | `npm run lint` | Linux/Bash wrapper |
 | Windows lint fallback | `npx.cmd eslint . --ignore-pattern dist --ignore-pattern .next` | Currently passes with image warnings |
@@ -126,7 +131,10 @@ Never put real values in this file, source files, committed `.env*`, screenshots
 | `RAZORPAY_KEY_ID` | Identifies test/live Razorpay account | Local env / production variable; never hardcode |
 | `RAZORPAY_KEY_SECRET` | Creates/verifies Razorpay server requests | Local secret / production encrypted secret |
 | `RAZORPAY_WEBHOOK_SECRET` | Verifies webhook signatures | Local secret / production encrypted secret |
+| `RAZORPAY_MODE` | `test` for staging, `live` only after the launch gate; `mock` is non-production only | Local env / production variable |
+| `ALLOW_MOCK_PAYMENTS` | Explicitly permits mock rehearsals outside production | Local env only; `false` in production |
 | `RESEND_API_KEY` | Sends transactional order email | Local secret / production encrypted secret |
+| `EMAIL_MODE` | `disabled` until sender verification, then `resend` | Local env / production variable |
 | `EMAIL_FROM` | Verified sender address | Local env / production variable |
 | `SUPPORT_EMAIL` | Public support and notification address | Local env / production variable |
 | `SUPPORT_WHATSAPP_NUMBER` | Public WhatsApp support target | Local env / production variable |
@@ -134,6 +142,12 @@ Never put real values in this file, source files, committed `.env*`, screenshots
 | `ADMIN_AUTH_MODE` | `cloudflare-access` in production; `local` is non-production only | Local env / production variable |
 | `CATALOG_SOURCE` | `demo` by default; set `database` only after D1 is migrated/populated | Local env / production variable |
 | `R2_PUBLIC_BASE_URL` | Public base URL for verified product objects referenced by storage key | Local env / production variable |
+| `SHIPPING_FLAT_RATE_PAISE` | Flat shipping charge in integer paise | Local env / production variable |
+| `FREE_SHIPPING_THRESHOLD_PAISE` | Optional free-shipping threshold in integer paise | Local env / production variable |
+| `SELLER_LEGAL_NAME` | Approved seller identity shown in policies | Production variable |
+| `SELLER_POSTAL_ADDRESS` | Approved seller address shown in policies | Production variable |
+| `CLOUDFLARE_ACCESS_TEAM_DOMAIN` | Access JWT issuer/JWKS domain | Production variable |
+| `CLOUDFLARE_ACCESS_AUD` | Access application audience verified by the server | Production variable |
 | `DB` D1 binding | Product/order database | `.openai/hosting.json`/Cloudflare binding; currently null and not production-ready |
 | R2 binding | Brand-owned product media | `.openai/hosting.json`/Cloudflare binding; currently null and not production-ready |
 | `CLOUDFLARE_ACCOUNT_ID` | Deployment account identifier | CI secret/config, never application client code |
@@ -213,6 +227,14 @@ Reasoning: the current ten products and images are placeholders, and the product
 
 Rejected: activating imported drafts automatically, trusting a client-only admin gate, or treating a filename as proof that an R2 object and image rights exist.
 
+### 2026-08-15 — Reserved inventory and webhook-authoritative payment lifecycle
+
+Decision: reserve variant inventory when a server-priced checkout order is created, release expired/cancelled reservations, and treat verified Razorpay webhooks as authoritative for real payment state. Browser payment callbacks may only record verification/processing state; mock completion is restricted to explicit non-production rehearsal mode.
+
+Reasoning: this prevents browser price manipulation, overselling, duplicate webhook effects and false paid orders while allowing safe local rehearsals before external accounts are ready.
+
+Rejected: decrementing stock in the browser, marking real orders paid from the Razorpay callback alone, or enabling live checkout with incomplete production configuration.
+
 ## Task board
 
 Update this board before ending every working session. Only one item should normally be In progress.
@@ -228,10 +250,16 @@ Update this board before ending every working session. Only one item should norm
 - Ten existing demo products and their reference image URLs entered as unverified draft catalogue rows.
 - Milestone 1A catalogue foundation: five-table D1/Drizzle schema and migration, validated idempotent CSV importer, inventory movement/import audit records, database-backed storefront mode with safe demo fallback, and fail-closed operator admin.
 - Catalogue/admin tests (7/7), native TypeScript, production build and rendered-output checks passing on 14 August 2026.
+- Product-detail routes, size/colour variants, persistent cart, guest Indian checkout and server-calculated pricing implemented.
+- Order, order-item, reservation, payment, webhook, status-event and admin-audit schema plus append-only D1 migration implemented.
+- Atomic stock reservation/release, overselling protection, Razorpay Orders/checkout/signature/webhook/refund handling and failed-payment retry implemented.
+- Cloudflare Access JWT-verified order dashboard with packing, shipping, tracking, delivery and refund operations implemented.
+- Transactional order email integration, WhatsApp support, draft policy pages, customer tracking and recovery/rollback runbook implemented.
+- TypeScript and production build pass; 15/15 Node tests and 6/6 desktop/mobile Playwright and accessibility tests pass on 15 August 2026; ESLint has zero errors and seven external-image optimization warnings.
 
 ### In progress
 
-- None. Claim one task here before making the next application change.
+- None. Software work requested through Milestone 5 is complete in source; owner-controlled production setup and acceptance are next.
 
 ### Next
 
@@ -243,12 +271,12 @@ Update this board before ending every working session. Only one item should norm
 - Confirm courier capability, pricing, tracking, COD and returns.
 - Obtain qualified GST/invoicing advice for PAN-India sales.
 - Approve real seller/contact details and policy inputs.
-- Continue Milestone 1 with cart/order/payment/admin-audit tables and order-status administration after catalogue production data is available.
+- Follow `docs/OWNER_ACTIONS.md` in order, configure the five-minute reservation cleanup trigger, and record both staging rehearsal orders.
 
 ### Blocked
 
-- Live payment launch: blocked by Razorpay approval, live policies/domain and test completion.
-- Product implementation: blocked by verified catalogue data and brand-owned media.
+- Live payment launch: blocked by Razorpay approval, domain, approved policies/seller/tax data and two owner-run staging rehearsals.
+- Production catalogue activation: blocked by verified product data and brand-owned media; the implementation remains safely in demo mode.
 - Shipping automation: blocked by courier selection; manual flow is planned first.
 - Tax calculations/invoices: blocked by qualified GST/tax decision.
 - Customer accounts: intentionally deferred until after soft-launch stabilization.
@@ -258,13 +286,15 @@ Update this board before ending every working session. Only one item should norm
 
 - The application defaults to ten demo products in `lib/catalog/demo.ts`; none are production catalogue records. Database mode is explicit via `CATALOG_SOURCE=database`.
 - External image URLs are references, not confirmed HOUSEOFPASHM-owned assets.
-- Cart and wishlist are browser-memory demonstrations and disappear on refresh.
-- There are no product-detail routes, selectable variants, persistent cart, real checkout or order management yet. The current admin is limited to validated catalogue import.
+- Cart persists in browser local storage; wishlist remains session-only and customer accounts remain intentionally deferred.
+- Real Razorpay mode, database catalogue and Resend email fail closed until their production values/bindings are supplied.
+- Policy pages remain visibly marked as drafts until approved seller identity, address and support contact are configured.
+- Reservation expiry cleanup requires a deployed Worker Cron Trigger every five minutes.
 - Newsletter submission is not persisted or sent.
 - Current `.openai/hosting.json` has null D1/R2 bindings and must not be mistaken for production resources.
 - Linux-oriented scripts require Bash and GNU `timeout`; native Windows PowerShell cannot run them unchanged.
 - Direct `tsc --noEmit` passes with the Wrangler-compatible Cloudflare Worker type release.
-- ESLint currently reports five `next/image` optimization warnings and no errors.
+- ESLint currently reports seven `next/image` optimization warnings for external/demo catalogue images and no errors.
 - Instagram access may be rate-limited and posts do not encode trustworthy SKU/variant/stock state.
 - The supplied public WhatsApp catalogue and Instagram profile expose cover/profile metadata but not authenticated product rows or durable product-image URLs; original owner exports are required.
 - The source Git repository is at `origin/main`; pushing it is not yet a production deployment.
@@ -272,16 +302,16 @@ Update this board before ending every working session. Only one item should norm
 ## Active handover
 
 ```text
-Agent/session: Codex, 2026-08-14
-Milestone: Milestone 1A — catalogue data layer, import and protected admin foundation
-Objective: Implement the complete catalogue backend foundation while preserving the approved storefront and safe demo fallback.
-Status: Complete in source; external production configuration remains intentionally unconfigured.
-Files changed: app storefront/admin/API/styles; db schema/access; drizzle migration; lib admin/catalogue modules; catalogue tests; package/TypeScript configuration; AGENTS.md.
-Tests run and exact results: `npm.cmd ci --ignore-scripts` passed; `npx.cmd tsc --noEmit` passed; catalogue/admin tests 7/7 passed; Vinext production build passed; full post-build suite 8/8 passed; ESLint passed with five existing `<img>` optimization warnings and no errors.
-Failures/blockers: Production D1/R2 bindings, verified owned media and exact operator emails are unavailable. Admin therefore fails closed and the storefront remains in demo mode.
-Uncommitted changes: None at handoff; all Milestone 1A source and documentation changes are committed together.
-Next exact action: Obtain operator emails and owned catalogue assets, provision D1/R2, apply `drizzle/0000_absent_bloodstrike.sql`, dry-run/import approved CSVs, then enable database mode.
-Do not overwrite: Existing catalogue source audit, payment decisions, hosting configuration or demo visual behavior.
+Agent/session: Codex, 2026-08-15
+Milestone: Milestones 1B–5 — shopping journey, payments, fulfilment and launch verification
+Objective: Complete the user-requested commerce implementation and document every owner-only production step.
+Status: Complete in source and automated local verification; external production configuration and human acceptance remain intentionally unconfigured.
+Files changed: storefront/product/checkout/policy/tracking/admin routes; commerce APIs/domain modules; D1 schema/migration; Worker scheduler; security headers/auth; tests; production environment template; owner/runbook documentation.
+Tests run and exact results: `npx.cmd tsc --noEmit` passed; Vinext production build passed; Node suite 15/15 passed; Playwright desktop/mobile and axe suite 6/6 passed; ESLint passed with zero errors and seven external-image warnings. `npm test` cannot invoke its Bash wrapper on this Windows host, so equivalent native stages were run separately.
+Failures/blockers: Production D1/R2/Access, verified owned media/product facts, domain, seller/tax/policy inputs, Razorpay/Resend accounts and courier rules require owner action. Two real staging rehearsal orders cannot be performed without those accounts.
+Uncommitted changes: None at handoff; the commerce completion source and documentation are committed together.
+Next exact action: Owner follows `docs/OWNER_ACTIONS.md` Step 1 onward; first provide two operator emails, approved seller/contact details and completed catalogue rows/assets.
+Do not overwrite: `.openai/hosting.json`, prior migrations, payment/inventory transition decisions, or the demo fallback safety gate.
 ```
 
 ## Agent working protocol

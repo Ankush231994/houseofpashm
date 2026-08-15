@@ -43,9 +43,22 @@ export async function getDatabaseCatalog(): Promise<StorefrontCatalog> {
 
   const byProduct = new Map<string, StorefrontProduct>();
   for (const row of rows) {
-    if (byProduct.has(row.productId)) continue;
     const image = resolveImageUrl(row.storageKey, row.sourceImageUrl);
     if (!image) continue;
+    const variant = {
+      sku: row.variantId,
+      colour: row.colour ?? undefined,
+      size: row.size ?? undefined,
+      price: row.pricePaise / 100,
+      mrp: row.mrpPaise / 100,
+      available: row.stockQuantity > 0,
+    };
+    const existing = byProduct.get(row.productId);
+    if (existing) {
+      existing.variants = [...(existing.variants ?? []), variant];
+      existing.available ||= variant.available;
+      continue;
+    }
     const subtitle = [row.fabric, row.embroidery, row.description]
       .filter(Boolean)
       .slice(0, 2)
@@ -67,6 +80,7 @@ export async function getDatabaseCatalog(): Promise<StorefrontCatalog> {
       colour: row.colour ?? undefined,
       size: row.size ?? undefined,
       available: row.stockQuantity > 0,
+      variants: [variant],
     });
   }
 

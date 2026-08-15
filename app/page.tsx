@@ -3,5 +3,6 @@ import Storefront from "./storefront";
 
 export default async function Home() {
   const catalog = await getStorefrontCatalog();
-  return <Storefront {...catalog} />;
+  const supportWhatsapp = (process.env.SUPPORT_WHATSAPP_NUMBER ?? "").replace(/\D/g, "");
+  return <Storefront {...catalog} supportWhatsapp={supportWhatsapp} />;
 }

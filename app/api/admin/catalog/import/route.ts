@@ -1,11 +1,17 @@
 import { getAdminAccess } from "../../../../../lib/admin-auth";
 import { importCatalog } from "../../../../../lib/catalog/importer";
 import { validateCatalogCsvs } from "../../../../../lib/catalog/validation";
+import { assertSameOrigin } from "../../../../../lib/http";
 
 const MAX_CSV_BYTES = 1_000_000;
 
 export async function POST(request: Request) {
-  const access = getAdminAccess(request.headers);
+  try {
+    assertSameOrigin(request);
+  } catch {
+    return Response.json({ error: "Request origin is not allowed." }, { status: 403 });
+  }
+  const access = await getAdminAccess(request.headers);
   if (!access.allowed) {
     return Response.json(
       { error: access.reason },

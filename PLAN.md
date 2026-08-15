@@ -53,7 +53,7 @@ Likely failure: Instagram posts omit stock, variants, weights, or current prices
 
 Goal: replace the hardcoded catalogue with a reliable local data layer.
 
-Status on 14 August 2026: catalogue foundation complete in source. Products, variants, images, import audits and inventory movements have a generated D1 migration; CSV validation/import, database storefront mode, safe demo fallback and fail-closed catalogue admin are implemented and tested. Owner-controlled D1/R2 resources, exact operator emails and verified product assets are still required. Cart, order, payment, webhook and broader order-admin tables remain in the later part of this milestone and must not be represented as complete.
+Status on 15 August 2026: complete in source. Catalogue, product, variant, inventory, order, order-item, reservation, payment, webhook, status-event and admin-audit tables have append-only D1 migrations; the protected catalogue import and order operations dashboard are implemented. Owner-controlled D1/R2/Access resources, exact operator emails and verified product assets are still required before production activation.
 
 Concrete deliverable: Drizzle migrations for products, variants, inventory movements, carts, orders, order items, payment attempts, webhook events and admin audit entries; local D1/R2 bindings; CSV import validation; protected admin screens for product, stock and order status.
 
@@ -64,6 +64,8 @@ Effort: 24–34 hours.
 Likely failure: treating stock as a single product number despite size/colour variants, or exposing admin routes without server-side authorization.
 
 ### Milestone 2 — Complete the shopping journey
+
+Status on 15 August 2026: complete in source and automated desktop/mobile browser verification. Production catalogue acceptance remains an owner gate.
 
 Goal: make the existing storefront capable of producing an order intent.
 
@@ -77,6 +79,8 @@ Likely failure: trusting browser prices or allowing two buyers to oversell the l
 
 ### Milestone 3 — Razorpay test checkout and order lifecycle
 
+Status on 15 August 2026: complete in source with signature, raw-webhook, state-transition and inventory tests. Razorpay Test Mode account configuration and real staging rehearsal remain owner-controlled.
+
 Goal: complete secure test-mode payment and create an auditable order.
 
 Concrete deliverable: server-created Razorpay orders, Standard Checkout, signature verification, webhook verification, idempotent payment handling, order states, failed-payment retry, refund recording and reconciliation view.
@@ -89,6 +93,8 @@ Likely failure: marking orders paid from the browser callback, mishandling webho
 
 ### Milestone 4 — Policies, communication and manual fulfilment
 
+Status on 15 August 2026: complete as an operational foundation. Policy pages intentionally remain marked draft, and email/shipping behavior remains disabled or manual until the owner supplies approved business and provider details.
+
 Goal: make a paid order operable by two people.
 
 Concrete deliverable: owner-approved contact, privacy, terms, shipping, cancellation/refund and exchange pages; transactional order emails; printable packing information; manual courier/tracking fields; WhatsApp support link; daily reconciliation checklist.
@@ -100,6 +106,8 @@ Effort: 14–22 hours, excluding professional review.
 Likely failure: copying generic policies that conflict with actual return/shipping practice. Razorpay requires a live website and core policy pages before live API access ([Razorpay website requirements](https://razorpay.com/docs/payments/dashboard/account-settings/business-website-details/)). Indian e-commerce rules require clear return/refund, shipment, payment, grievance and total-price information; obtain professional advice before publishing ([Department of Consumer Affairs rules](https://consumeraffairs.nic.in/sites/default/files/E%20commerce%20rules_0.pdf)).
 
 ### Milestone 5 — Test suite and launch rehearsal
+
+Status on 15 August 2026: automated source verification is complete (15 Node tests and 6 desktop/mobile browser/accessibility tests). Two end-to-end staging rehearsal orders and a restore rehearsal remain human acceptance requirements after external services are configured.
 
 Goal: prove the system works when normal and abnormal events occur.
 
