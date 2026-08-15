@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useCart } from "../../../lib/cart";
 import type { StorefrontProduct, StorefrontVariant } from "../../../lib/catalog/types";
@@ -14,8 +14,27 @@ export default function ProductDetails({ product }: { product: StorefrontProduct
   const [sku, setSku] = useState(variants.find((variant) => variant.available)?.sku ?? variants[0].sku);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerZoomed, setViewerZoomed] = useState(false);
   const cart = useCart();
   const selected = variants.find((variant) => variant.sku === sku) ?? variants[0];
+
+  useEffect(() => {
+    if (!viewerOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setViewerOpen(false);
+        setViewerZoomed(false);
+      }
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [viewerOpen]);
 
   function add() {
     if (!selected.available) return;
@@ -27,7 +46,9 @@ export default function ProductDetails({ product }: { product: StorefrontProduct
     <header className="simple-header"><Link className="brand" href="/"><span className="brand-mark">H</span><span><b>HOUSEOF</b><em>PASHM</em></span></Link><Link href="/checkout">BAG ({cart.itemCount})</Link></header>
     <nav className="breadcrumbs" aria-label="Breadcrumb"><Link href="/">Home</Link><span>/</span><span>{product.category}</span><span>/</span><b>{product.name}</b></nav>
     <section className="product-detail-grid">
-      <div className="product-detail-image"><img src={product.image} alt={product.name}/></div>
+      <button type="button" className="product-detail-image" onClick={() => setViewerOpen(true)} aria-label={`Open a larger image of ${product.name}`}>
+        <img src={product.image} alt={product.name}/><span className="product-zoom-cue" aria-hidden="true">⌕ VIEW LARGER</span>
+      </button>
       <div className="product-detail-copy"><span className="eyebrow">{product.category.toUpperCase()}</span><h1>{product.name}</h1><p>{product.subtitle}</p>
         <div className="detail-price"><strong>₹{selected.price.toLocaleString("en-IN")}</strong><del>₹{selected.mrp.toLocaleString("en-IN")}</del><span>Final total calculated securely at checkout</span></div>
         <fieldset><legend>Choose size and colour</legend><div className="variant-grid">{variants.map((variant)=><button type="button" key={variant.sku} className={sku===variant.sku?"selected":""} disabled={!variant.available} onClick={()=>setSku(variant.sku)}><b>{variant.size??"Standard"}</b><span>{variant.colour??variant.sku}</span>{!variant.available&&<small>Out of stock</small>}</button>)}</div></fieldset>
@@ -37,5 +58,14 @@ export default function ProductDetails({ product }: { product: StorefrontProduct
         <ul className="detail-promises"><li>Server-checked price and stock at checkout</li><li>Delivery across supported Indian PIN codes</li><li>Exchange eligibility follows the published policy</li></ul>
       </div>
     </section>
+    {viewerOpen&&<div className="product-image-viewer" role="dialog" aria-modal="true" aria-label={`${product.name} image viewer`} onMouseDown={(event)=>{if(event.target===event.currentTarget){setViewerOpen(false);setViewerZoomed(false)}}}>
+      <div className="product-image-viewer-panel">
+        <button type="button" className="product-image-viewer-close" autoFocus onClick={()=>{setViewerOpen(false);setViewerZoomed(false)}} aria-label="Close image viewer">×</button>
+        <button type="button" className={`product-image-viewer-media ${viewerZoomed?"is-zoomed":""}`} onClick={()=>setViewerZoomed((current)=>!current)} aria-label={viewerZoomed?"Zoom image out":"Zoom image in"}>
+          <img src={product.image} alt={product.name}/>
+        </button>
+        <p>{viewerZoomed?"Click or tap the image to zoom out":"Click or tap the image to zoom in"} · Press Escape to close</p>
+      </div>
+    </div>}
   </main>;
 }

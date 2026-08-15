@@ -255,11 +255,12 @@ Update this board before ending every working session. Only one item should norm
 - Atomic stock reservation/release, overselling protection, Razorpay Orders/checkout/signature/webhook/refund handling and failed-payment retry implemented.
 - Cloudflare Access JWT-verified order dashboard with packing, shipping, tracking, delivery and refund operations implemented.
 - Transactional order email integration, WhatsApp support, draft policy pages, customer tracking and recovery/rollback runbook implemented.
-- TypeScript and production build pass; 15/15 Node tests and 6/6 desktop/mobile Playwright and accessibility tests pass on 15 August 2026; ESLint has zero errors and seven external-image optimization warnings.
+- TypeScript and production build pass; 15/15 Node tests and 6/6 desktop/mobile Playwright and accessibility tests pass on 15 August 2026; ESLint has zero errors and eight external-image optimization warnings.
+- Product images now expose a desktop zoom cursor and accessible desktop/mobile full-screen viewer with zoom toggle, backdrop/Escape close, scroll locking and reduced-motion support; browser and axe coverage passes on both viewports.
 
 ### In progress
 
-- None. Software work requested through Milestone 5 is complete in source; owner-controlled production setup and acceptance are next.
+- None. Software work requested through Milestone 5 and the product-image zoom enhancement are complete in source; owner-controlled production setup and acceptance are next.
 
 ### Next
 
@@ -294,7 +295,7 @@ Update this board before ending every working session. Only one item should norm
 - Current `.openai/hosting.json` has null D1/R2 bindings and must not be mistaken for production resources.
 - Linux-oriented scripts require Bash and GNU `timeout`; native Windows PowerShell cannot run them unchanged.
 - Direct `tsc --noEmit` passes with the Wrangler-compatible Cloudflare Worker type release.
-- ESLint currently reports seven `next/image` optimization warnings for external/demo catalogue images and no errors.
+- ESLint currently reports eight `next/image` optimization warnings for external/demo catalogue images and no errors.
 - Instagram access may be rate-limited and posts do not encode trustworthy SKU/variant/stock state.
 - The supplied public WhatsApp catalogue and Instagram profile expose cover/profile metadata but not authenticated product rows or durable product-image URLs; original owner exports are required.
 - The source Git repository is at `origin/main`; pushing it is not yet a production deployment.
@@ -307,7 +308,7 @@ Milestone: Milestones 1B–5 — shopping journey, payments, fulfilment and laun
 Objective: Complete the user-requested commerce implementation and document every owner-only production step.
 Status: Complete in source and automated local verification; external production configuration and human acceptance remain intentionally unconfigured.
 Files changed: storefront/product/checkout/policy/tracking/admin routes; commerce APIs/domain modules; D1 schema/migration; Worker scheduler; security headers/auth; tests; production environment template; owner/runbook documentation.
-Tests run and exact results: `npx.cmd tsc --noEmit` passed; Vinext production build passed; Node suite 15/15 passed; Playwright desktop/mobile and axe suite 6/6 passed; ESLint passed with zero errors and seven external-image warnings. `npm test` cannot invoke its Bash wrapper on this Windows host, so equivalent native stages were run separately.
+Tests run and exact results: `npx.cmd tsc --noEmit` passed; Vinext production build passed; Node suite 15/15 passed; Playwright desktop/mobile interaction and axe suite 6/6 passed including the product zoom viewer; ESLint passed with zero errors and eight external-image warnings. `npm test` cannot invoke its Bash wrapper on this Windows host, so equivalent native stages were run separately.
 Failures/blockers: Production D1/R2/Access, verified owned media/product facts, domain, seller/tax/policy inputs, Razorpay/Resend accounts and courier rules require owner action. Two real staging rehearsal orders cannot be performed without those accounts.
 Uncommitted changes: None at handoff; the commerce completion source and documentation are committed together.
 Next exact action: Owner follows `docs/OWNER_ACTIONS.md` Step 1 onward; first provide two operator emails, approved seller/contact details and completed catalogue rows/assets.
